@@ -17,7 +17,7 @@
 | M9 | GUI + watch 模式 | ✅ |
 | M10 | eval 评测 + GitHub Actions | ✅ |
 | M11 | 多集合集 + 跨语言 + jianying_draft | ✅ |
-| M12 | PyInstaller 打包 + ffmpeg 首启检测 + README + PLUGINS.md | ⬜ |
+| M12 | PyInstaller 打包 + ffmpeg 首启检测 + README + PLUGINS.md | ✅ |
 
 ## 环境说明
 - 本机为 Linux 沙箱（无系统 ffmpeg、Python 3.10）；已通过 uv 安装 Python 3.11，ffmpeg 7.0.2 静态构建置于 `~/tools/ffmpeg`（测试经 `conftest.py` 注入）。
@@ -25,6 +25,18 @@
 
 ## 阻塞
 （暂无）
+
+## M12 完成内容（2025-10-16）
+- `ffmpeg_bootstrap.py`：首启检测（配置→./bin→PATH→自动下载静态构建到 ./bin），多平台下载地址
+- `__main__.py`：exe 入口，无参数双击默认 GUI，首启检测 ffmpeg
+- `autocut.spec` + `build_exe.bat`/`build_exe.sh`：PyInstaller 单目录打包（ffmpeg 不外置）
+- `README.md`（中文为主：配置示例、三档 profile、常见问题、打包）
+- `docs/PLUGINS.md`：provider 接口表 + entry points 最小示例（TTS/模型协议）
+- `docs/DECISIONS.md`：12 条设计决策
+- `LICENSE`：MIT
+- 10 个 M12 测试全过；修复测试间 ffmpeg override 污染
+- **全量 129 tests passing**
+
 
 ## M11 完成内容（2025-10-16）
 - `compilation.py`：多集合集（逐集跑 outline → 链式汇总全剧大纲 → 跨集多源 timeline → tts/align/render）
