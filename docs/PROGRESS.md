@@ -15,7 +15,7 @@
 | M7 | 剧集记忆 + metadata 发布物料 | ✅ |
 | M8 | MCP Server + SKILL.md | ✅ |
 | M9 | GUI + watch 模式 | ✅ |
-| M10 | eval 评测 + GitHub Actions | ⬜ |
+| M10 | eval 评测 + GitHub Actions | ✅ |
 | M11 | 多集合集 + 跨语言 + jianying_draft | ⬜ |
 | M12 | PyInstaller 打包 + ffmpeg 首启检测 + README + PLUGINS.md | ⬜ |
 
@@ -25,6 +25,14 @@
 
 ## 阻塞
 （暂无）
+
+## M10 完成内容（2025-10-16）
+- `eval_runner.py`：对评测集重跑全流程，reviewer 当裁判按 5 维 1-10 打分
+  （故事连贯/文案画面匹配/人名准确/开头吸引力/节奏），记录 QC/解说占比/时长偏差/token/费用/耗时，
+  输出 eval_report.html + eval_report.json，支持 --compare 对比旧报告
+- `.github/workflows/ci.yml`：Windows + Ubuntu 矩阵，装 ffmpeg，lint + pytest + mock 全流程校验
+- 4 个 M10 测试全过（含真实评测跑通出报告）
+
 
 ## M9 完成内容（2025-10-16）
 - `web/server.py`：FastAPI app（index、config 读写、models 列表/测试/available、providers、

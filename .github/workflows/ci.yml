@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Install Python 3.11
+        run: uv python install 3.11
+
+      - name: Install ffmpeg (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install ffmpeg (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ffmpeg --no-progress
+
+      - name: Install dependencies
+        run: |
+          uv venv --python 3.11 .venv
+          uv pip install -e ".[dev]" --python .venv/bin/python
+
+      - name: Lint
+        run: uv run ruff check src tests scripts
+
+      - name: Generate test media
+        run: uv run python scripts/make_test_media.py tests/assets
+
+      - name: Run tests (mock only)
+        run: uv run pytest tests/ -q
+        env:
+          AUTOCUT_FFMPEG_DIR: ""  # 使用系统 ffmpeg
+
+      - name: Full mock pipeline (生成素材 → run → 校验 MP4)
+        run: |
+          uv run python -c "
+          from pathlib import Path
+          from autocut.config import Config, ModelSpec, Roles, ProvidersConfig
+          from autocut.runner import run_video
+          models=[ModelSpec(name='mt',protocol='mock',capabilities=['text','json_mode'],price_in=0.1,price_out=0.2),
+                  ModelSpec(name='mv',protocol='mock',capabilities=['text','vision','video','json_mode'])]
+          roles=Roles(**{r:['mt'] for r in Roles.model_fields}); roles.vision=['mv']
+          cfg=Config(models=models, roles=roles, providers=ProvidersConfig(subtitle='mock',shots='fixed',loudness='mock',hardsub='none',tts='mock'))
+          cfg.video.target_length='15s'
+          final=run_video(Path('tests/assets/test_60s.mp4'), cfg)
+          assert final.exists(), 'no output'
+          print('成片:', final)
+          "
