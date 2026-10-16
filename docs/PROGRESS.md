@@ -13,7 +13,7 @@
 | M5 | tts + align（原创度约束） | ✅ |
 | M6 | CLI 全流程 + 断点续跑 + 并发 + qc + manifest + estimate | ✅ |
 | M7 | 剧集记忆 + metadata 发布物料 | ✅ |
-| M8 | MCP Server + SKILL.md | ⬜ |
+| M8 | MCP Server + SKILL.md | ✅ |
 | M9 | GUI + watch 模式 | ⬜ |
 | M10 | eval 评测 + GitHub Actions | ⬜ |
 | M11 | 多集合集 + 跨语言 + jianying_draft | ⬜ |
@@ -25,6 +25,14 @@
 
 ## 阻塞
 （暂无）
+
+## M8 完成内容（2025-10-16）
+- `mcp_server.py`：官方 mcp SDK stdio server + 11 个工具
+  （run/status/result/estimate/get_config/list_providers/list_models/test_model/list_profiles/set_role）
+- 任务注册表（进程内 job 表），run 后台线程执行
+- `skills/autocut/SKILL.md`：安装/配置/CLI/MCP 调用/产物/profile/FAQ
+- 10 个 M8 测试全过（含 run+status 端到端）
+
 
 ## M7 完成内容（2025-10-16）
 - `series.py`：SeriesMemory（人物表/别称/关系/读音、说话人映射、前情提要）、
