@@ -1,0 +1,164 @@
+# AutoCut 配置示例。复制为 config.toml 后按需修改。
+# 仓库只提交本示例文件；真实 config.toml 含 api_key，勿提交。
+
+[general]
+output_dir = "output"
+work_dir = "work"
+series_dir = "series"
+ffmpeg_path = ""                 # 为空自动检测 ./bin、PATH；也可指定绝对路径
+source_language = "zh"           # 原片语言
+narration_language = "zh"        # 解说语言（跨语言时与上面不同）
+ffmpeg_concurrency = 2
+log_level = "INFO"
+
+[video]
+aspect = "16:9"                  # 16:9 / 9:16 / 1:1
+resolution = "1080p"
+fps = 30
+target_length = "8min"
+style = "悬疑"                    # 悬疑/搞笑/情感/自定义
+review = false                   # true 时生成时间轴后暂停等待人工确认（默认全自动）
+
+# ---------------------------------------------------------------------------
+# 模型注册表。protocol: "openai"（OpenAI 兼容，覆盖 DeepSeek/Gemini 兼容端点/Ollama/中转）
+#                      "gemini_native"（Gemini 原生，仅 video 能力需要）
+# api_key 支持 env:VAR_NAME 引用环境变量。
+# ---------------------------------------------------------------------------
+[[models]]
+name = "deepseek-4.1f"
+protocol = "openai"
+base_url = "https://api.deepseek.com/v1"
+api_key = "env:DEEPSEEK_API_KEY"
+model = "deepseek-chat"
+capabilities = ["text", "json_mode"]
+price_in = 0.27
+price_out = 1.10
+context_window = 128000
+max_concurrency = 4
+
+[[models]]
+name = "gemini-3.8f"
+protocol = "openai"
+base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
+api_key = "env:GEMINI_API_KEY"
+model = "gemini-2.5-flash"
+capabilities = ["text", "vision", "video", "json_mode"]
+price_in = 0.30
+price_out = 2.50
+context_window = 1000000
+max_concurrency = 4
+
+# mock 模型：测试用，不产生任何费用，零外部调用
+[[models]]
+name = "mock-text"
+protocol = "mock"
+capabilities = ["text", "json_mode"]
+
+[[models]]
+name = "mock-vision"
+protocol = "mock"
+capabilities = ["text", "vision", "video", "json_mode"]
+
+# ---------------------------------------------------------------------------
+# 角色分配：角色 → 模型名列表（按 fallback 顺序）
+# ---------------------------------------------------------------------------
+[roles]
+name_fix = ["mock-text"]
+outline = ["mock-text"]
+scout = ["mock-text"]
+vision = ["mock-vision"]
+writer = ["mock-text"]
+reviewer = ["mock-text"]
+rewrite = ["mock-text"]
+memory = ["mock-text"]
+metadata = ["mock-text"]
+style = ["mock-text"]
+fixer = ["mock-text"]
+
+# ---------------------------------------------------------------------------
+# 命名方案（profile）。CLI --profile 选择；--role 可再覆盖单个角色。
+# ---------------------------------------------------------------------------
+[profiles.economy]
+vision_mode = "frames"
+review_rounds = 0
+[profiles.economy.scout]
+candidates = 25
+[profiles.economy.roles]
+vision = ["mock-vision"]
+
+[profiles.balanced]
+vision_mode = "frames"
+review_rounds = 0
+[profiles.balanced.scout]
+candidates = 25
+
+[profiles.best]
+vision_mode = "video"            # 需要 vision 角色模型具备 video 能力
+review_rounds = 1                # 启用 reviewer 自审一轮
+[profiles.best.scout]
+candidates = 40
+
+active_profile = "balanced"
+
+# ---------------------------------------------------------------------------
+# Provider 选择（每环节可替换，见 docs/PLUGINS.md）
+# ---------------------------------------------------------------------------
+[providers]
+subtitle = "auto"                # embedded/file/openai_asr/local_whisper/auto
+shots = "pyscenedetect"          # pyscenedetect/fixed
+loudness = "ffmpeg_ebur128"
+hardsub = "opencv"               # opencv/none
+tts = "edge_tts"                 # edge_tts/openai_tts/custom_http
+renderer = "ffmpeg_mp4"          # ffmpeg_mp4/jianying_draft
+scout_rule = true
+vision_none_ok = true
+
+[asr]
+model = ""                       # 指向 [[models]] 的 name，或留空用 base_url
+base_url = ""                    # OpenAI 兼容转写端点（Groq 等）
+api_key = ""
+model_name = "whisper-1"
+diarization = true               # 说话人分离
+
+[story]
+hook = true                      # 倒叙钩子
+
+[style]
+examples_dir = ""                # 用户范例解说文稿目录（提炼风格指南）
+
+[tts]
+provider = "edge_tts"
+voice = "zh-CN-YunxiNeural"
+rate = "+0%"
+pronunciation_file = ""          # 读音字典：每行「原词=替换读法」
+sentence_pause = 0.2
+custom_http_url = ""             # CosyVoice 等自部署 URL 模板
+
+[subtitle_style]
+font = "Sans"
+font_size = 20
+color = "&H00FFFFFF"
+outline_color = "&H00000000"
+outline = 2
+position = "bottom"
+margin_v = 40
+max_chars_per_line = 16
+hardsub_mode = "move_up"         # move_up/bar/blur
+translation_font_size = 14
+
+[audio]
+narration_orig_volume = 0.15     # 解说段原声压低比例
+bgm_library = ""                 # 配乐库目录（按情绪分子文件夹）
+bgm_volume = 0.12
+bgm_on_original = "duck"         # duck/mute
+
+[originality]
+min_narration_ratio = 0.6        # 解说占比下限
+max_original_segment_seconds = 8 # 单段原声上限（秒）
+max_original_total_ratio = 0.3   # 原声总占比上限
+
+[limits]
+max_cost_per_episode = 10.0      # 单集费用上限（USD），超限停止
+
+[prompts]
+custom_dir = ""                  # 自定义提示词目录（覆盖内置）
