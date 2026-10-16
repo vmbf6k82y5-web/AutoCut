@@ -7,16 +7,18 @@
 
 from __future__ import annotations
 
-import subprocess
 import sys
 from pathlib import Path
+
+from autocut.utils import run_cmd
 
 FFMPEG = "ffmpeg"
 
 
 def run(args: list[str]) -> None:
     print("+", " ".join(str(a) for a in args[:6]), "...")
-    subprocess.run([str(a) for a in args], check=True, capture_output=True)
+    # 复用 utils.run_cmd：命令非零退出时异常里带 ffmpeg stderr，真因不再被吞掉
+    run_cmd(args)
 
 
 def make_base_video(out: Path, duration: int = 60, with_audio: bool = True) -> Path:

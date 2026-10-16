@@ -26,20 +26,62 @@ from .ass import ASSEvent, build_ass, events_from_narration
 logger = logging.getLogger("autocut.render.ffmpeg_mp4")
 
 
+#: 优先尝试的硬件编码器（顺序即优先级）
+_HW_ENCODERS = ("h264_nvenc", "h264_qsv", "h264_amf")
+#: 探测结果缓存：同一进程内同一 ffmpeg 只探测一次
+_encoder_cache: dict[str, str] = {}
+
+
+def _encoder_usable(ffmpeg: Path, encoder: str) -> bool:
+    """真实试编一帧，判断编码器在本机是否可用。
+
+    `-encoders` 只说明该编码器编译进了 ffmpeg；机器没有对应驱动/设备时
+    （如 runner 无 NVIDIA 驱动却编入了 h264_nvenc）只有真正编码才暴露得出来。
+    """
+    try:
+        proc = subprocess.run(
+            [str(ffmpeg), "-hide_banner", "-v", "error", "-f", "lavfi",
+             "-i", "color=c=black:s=128x72:r=1", "-frames:v", "1",
+             "-c:v", encoder, "-f", "null", "-"],
+            capture_output=True, text=True, timeout=60, errors="replace",
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.info("编码器 %s 试编异常，跳过: %s", encoder, sanitize(e))
+        return False
+    if proc.returncode != 0:
+        lines = [ln for ln in (proc.stderr or "").strip().splitlines() if ln.strip()]
+        logger.info(
+            "编码器 %s 不可用（无驱动/设备？），跳过: %s",
+            encoder, sanitize(lines[-1] if lines else f"exit {proc.returncode}"),
+        )
+        return False
+    return True
+
+
 def detect_encoder(ffmpeg: Path) -> str:
-    """探测可用硬件编码器，返回编码器名。"""
+    """探测可用编码器，返回编码器名；结果按 ffmpeg 路径缓存。
+
+    先看 `-encoders` 列出哪些，再逐个试编确认本机真能用，最后回退 libx264。
+    """
+    key = str(ffmpeg)
+    if key in _encoder_cache:
+        return _encoder_cache[key]
+    listed = ""
     try:
         proc = subprocess.run(
             [str(ffmpeg), "-hide_banner", "-encoders"],
             capture_output=True, text=True, timeout=30, errors="replace",
         )
-        out = proc.stdout or ""
-        for enc in ("h264_nvenc", "h264_qsv", "h264_amf", "libx264"):
-            if enc in out:
-                logger.info("选用编码器: %s", enc)
-                return enc
+        listed = proc.stdout or ""
     except Exception as e:  # noqa: BLE001
-        logger.debug("编码器探测失败: %s", sanitize(e))
+        logger.debug("编码器列表探测失败: %s", sanitize(e))
+    for enc in (*_HW_ENCODERS, "libx264"):
+        if enc in listed and _encoder_usable(ffmpeg, enc):
+            logger.info("选用编码器: %s", enc)
+            _encoder_cache[key] = enc
+            return enc
+    logger.warning("未探测到可用编码器，回退 libx264")
+    _encoder_cache[key] = "libx264"
     return "libx264"
 
 
