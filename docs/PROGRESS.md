@@ -8,7 +8,7 @@
 |---|---|---|
 | M1 | 项目骨架、配置加载、provider 注册表、mock providers、测试素材、日志脱敏 | ✅ |
 | M2 | 手写 Timeline → ffmpeg_mp4 出 MP4 | ✅ |
-| M3 | probe/hardsub/subtitle/shots/loudness | ⬜ |
+| M3 | probe/hardsub/subtitle/shots/loudness | ✅ |
 | M4 | ModelClient + LLM 阶段（name_fix/outline/scout/vision/writer/reviewer）+ 风格学习 | ⬜ |
 | M5 | tts + align（原创度约束） | ⬜ |
 | M6 | CLI 全流程 + 断点续跑 + 并发 + qc + manifest + estimate | ⬜ |
@@ -25,6 +25,17 @@
 
 ## 阻塞
 （暂无）
+
+## M3 完成内容（2025-10-16）
+- `stages/probe.py`：ffprobe 元信息（时长/分辨率/帧率/音轨/字幕轨）→ 00_probe.json
+- `stages/subtitle_providers.py`：embedded（抽内嵌软字幕 mov_text→srt）/file（用户 srt + 可选 ffsubsync）/
+  openai_asr（OpenAI 兼容转写 + 说话人分离字段）/local_whisper（faster-whisper 可选）/auto（链式回退）
+- `stages/shot_providers.py`：pyscenedetect（360p 代理分析）+ fixed 兜底；scenedetect 失败自动回退
+- `stages/loudness_providers.py`：ffmpeg ebur128 + volumedetect 分窗，高能区间提取与归一化打分
+- `stages/hardsub_providers.py`：opencv 底部 25% 区域 Canny 边缘密度 + 对比度检测（不用 OCR）+ none
+- 修复 provider 注册表惰性重建（_ensure_builtins），解决 reset 后丢注册
+- 15 个测试全部通过（含真实 ffmpeg 的镜头检测、内嵌字幕抽取、硬字幕正负例）
+
 
 ## M2 完成内容（2025-10-16）
 - `render/ass.py`：词级时间戳 → ASS 字幕（断句 ≤max_chars、时间偏移、样式、Translation 样式）

@@ -113,9 +113,21 @@ def register_model_protocol(name: str, factory: Callable[[], Any]) -> None:
     _model_protocols[name] = factory
 
 
+def _ensure_builtins() -> None:
+    """确保内置 provider 已注册（幂等，get/list 前调用）。"""
+    from . import builtin, model_clients
+
+    if not _registry.get("subtitle") or not _model_protocols:
+        builtin._REGISTERED = False
+        model_clients._REGISTERED = False
+        register_builtin_providers()
+        register_builtin_model_protocols()
+
+
 def _load_entry_points() -> None:
     """扫描 entry points，加载第三方 provider。"""
     global _entry_points_loaded
+    _ensure_builtins()
     if _entry_points_loaded:
         return
     _entry_points_loaded = True
@@ -183,6 +195,11 @@ def reset_registry() -> None:
         _registry[g].clear()
     _model_protocols.clear()
     _entry_points_loaded = False
+    # 同步重置内置模块的注册标志，确保 force 重建生效
+    from . import builtin, model_clients
+
+    builtin._REGISTERED = False
+    model_clients._REGISTERED = False
     register_builtin_providers()
     register_builtin_model_protocols()
 
