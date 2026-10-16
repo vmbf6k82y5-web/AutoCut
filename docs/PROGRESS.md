@@ -10,7 +10,7 @@
 | M2 | 手写 Timeline → ffmpeg_mp4 出 MP4 | ✅ |
 | M3 | probe/hardsub/subtitle/shots/loudness | ✅ |
 | M4 | ModelClient + LLM 阶段（name_fix/outline/scout/vision/writer/reviewer）+ 风格学习 | ✅ |
-| M5 | tts + align（原创度约束） | ⬜ |
+| M5 | tts + align（原创度约束） | ✅ |
 | M6 | CLI 全流程 + 断点续跑 + 并发 + qc + manifest + estimate | ⬜ |
 | M7 | 剧集记忆 + metadata 发布物料 | ⬜ |
 | M8 | MCP Server + SKILL.md | ⬜ |
@@ -25,6 +25,15 @@
 
 ## 阻塞
 （暂无）
+
+## M5 完成内容（2025-10-16）
+- `stages/tts_providers.py`：edge_tts（词级 WordBoundary 时间戳 + 情绪 rate/pitch 映射）/
+  openai_tts / custom_http（URL 模板）+ 读音字典加载与应用 + 字均分兜底
+- `stages/tts_stage.py`：并行合成所有 narration 段，回写 tts_duration/audio_file
+- `stages/align.py`：V>T 收缩吸附镜头边界 / V<T 延长避冲突 / speed 0.85–1.2 微调 /
+  SRT 句边界吸附（0.3s 容差）/ 原创度三约束校验
+- 11 个 M5 测试全部通过
+
 
 ## M4 完成内容（2025-10-16）
 - `model_client.py`：统一 ModelClient 协议（chat_json/chat_with_images/chat_with_video）
