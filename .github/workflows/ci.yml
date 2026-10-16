@@ -5,9 +5,16 @@ on:
     branches: [main]
   pull_request:
 
+# Windows runner 控制台默认 cp1252，Python 子进程 print 中文会 UnicodeEncodeError。
+# 工作流级统一开启 UTF-8 模式，覆盖所有步骤里的 Python（含 uv run），无需逐个改 print。
+env:
+  PYTHONUTF8: "1"
+
 jobs:
   test:
     strategy:
+      # Windows 失败不再连带取消 Ubuntu，两个平台各自跑到出结论
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
