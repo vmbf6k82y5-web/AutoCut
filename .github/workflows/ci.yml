@@ -40,16 +40,28 @@ jobs:
         run: |
           # choco 社区源偶发 504，且“装 0 个包”仍返回 0：必须显式校验并重试，
           # 否则失败会推迟到 Generate test media 才以 FileNotFoundError 暴露（见 Run 5）
-          $ErrorActionPreference = 'Continue'  # 成败由下面的校验判断，不被非零退出中断
+          # 放开 ErrorActionPreference：即使 native 非零退出被升级为终止错误，也不中断重试
+          $ErrorActionPreference = 'Continue'
           for ($i = 1; $i -le 3; $i++) {
             choco install ffmpeg --no-progress -y
-            if (Get-Command ffmpeg -ErrorAction SilentlyContinue) { break }
-            Write-Host "::warning::第 $i 次安装后仍未找到 ffmpeg，15 秒后重试"
-            Start-Sleep -Seconds 15
+            if ((Get-Command ffmpeg -ErrorAction SilentlyContinue) -and (Get-Command ffprobe -ErrorAction SilentlyContinue)) { break }
+            if ($i -lt 3) {
+              Write-Host "::warning::第 $i 次安装后仍未找到 ffmpeg/ffprobe，15 秒后重试"
+              Start-Sleep -Seconds 15
+            }
           }
-          $ok = (Get-Command ffmpeg -ErrorAction SilentlyContinue) -and (Get-Command ffprobe -ErrorAction SilentlyContinue)
+          # shim 存在 ≠ 真能跑：直接执行一次，用退出码判定
+          $ok = $false
+          if ((Get-Command ffmpeg -ErrorAction SilentlyContinue) -and (Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+            & ffmpeg -version | Out-Null
+            $ok = ($LASTEXITCODE -eq 0)
+            if ($ok) {
+              & ffprobe -version | Out-Null
+              $ok = ($LASTEXITCODE -eq 0)
+            }
+          }
           if (-not $ok) {
-            Write-Host "::error::ffmpeg/ffprobe 安装失败（choco 源不稳定）：重跑本 workflow 或改用其他安装源"
+            Write-Host "::error::ffmpeg/ffprobe 不可用（choco 源不稳定或安装损坏）：重跑本 workflow 或改用其他安装源"
             exit 1
           }
           ffmpeg -version

@@ -19,7 +19,8 @@ class TestFFmpegBootstrap:
     def test_find_in_path(self, ffmpeg_dir, monkeypatch):
         monkeypatch.setenv("PATH", str(ffmpeg_dir))
         ffmpeg = find_executable("ffmpeg")
-        assert ffmpeg.name == "ffmpeg"
+        # Windows 上 find_executable 按平台带 .exe 后缀，解析到的是 ffmpeg.exe
+        assert ffmpeg.stem == "ffmpeg"
 
     def test_download_urls_defined(self):
         """各平台下载地址已定义。"""
