@@ -16,7 +16,7 @@
 | M8 | MCP Server + SKILL.md | ✅ |
 | M9 | GUI + watch 模式 | ✅ |
 | M10 | eval 评测 + GitHub Actions | ✅ |
-| M11 | 多集合集 + 跨语言 + jianying_draft | ⬜ |
+| M11 | 多集合集 + 跨语言 + jianying_draft | ✅ |
 | M12 | PyInstaller 打包 + ffmpeg 首启检测 + README + PLUGINS.md | ⬜ |
 
 ## 环境说明
@@ -25,6 +25,14 @@
 
 ## 阻塞
 （暂无）
+
+## M11 完成内容（2025-10-16）
+- `compilation.py`：多集合集（逐集跑 outline → 链式汇总全剧大纲 → 跨集多源 timeline → tts/align/render）
+- `render/jianying_draft.py`：剪映草稿导出（pyJianYingDraft 可选依赖，未装给中文提示）
+- 跨语言：source_language 与 narration_language 分离，writer 用 narration_language
+- 可选功能关闭测试：hook=false、review=false（默认全自动）、hardsub=none、bgm 空跳过、style 无范例
+- 10 个 M11 测试全过
+
 
 ## M10 完成内容（2025-10-16）
 - `eval_runner.py`：对评测集重跑全流程，reviewer 当裁判按 5 维 1-10 打分
