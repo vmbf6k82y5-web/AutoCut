@@ -7,7 +7,7 @@
 | 里程碑 | 内容 | 状态 |
 |---|---|---|
 | M1 | 项目骨架、配置加载、provider 注册表、mock providers、测试素材、日志脱敏 | ✅ |
-| M2 | 手写 Timeline → ffmpeg_mp4 出 MP4 | ⬜ |
+| M2 | 手写 Timeline → ffmpeg_mp4 出 MP4 | ✅ |
 | M3 | probe/hardsub/subtitle/shots/loudness | ⬜ |
 | M4 | ModelClient + LLM 阶段（name_fix/outline/scout/vision/writer/reviewer）+ 风格学习 | ⬜ |
 | M5 | tts + align（原创度约束） | ⬜ |
@@ -25,6 +25,20 @@
 
 ## 阻塞
 （暂无）
+
+## M2 完成内容（2025-10-16）
+- `render/ass.py`：词级时间戳 → ASS 字幕（断句 ≤max_chars、时间偏移、样式、Translation 样式）
+- `render/ffmpeg_mp4.py`：完整渲染器
+  - 逐段帧精确切片（并行，受 ffmpeg_concurrency 限制）
+  - 9:16 模糊背景填充、16:9/1:1 letterbox
+  - speed≠1 时 setpts/atempo 变速
+  - narration 段原声×orig_volume 与 TTS 混音 + 首尾 afade
+  - 自动配乐（BGM 循环铺满 + 音量压低）
+  - concat demuxer 拼接
+  - ASS 字幕烧录；硬字幕三模式（move_up 上移/bar 半透明底条/blur 模糊）
+  - 编码器自动检测 nvenc→qsv→amf→libx264
+- 10 个渲染测试全部通过（含 9:16、钩子乱序、硬字幕三模式、配乐、变速、编码器探测）
+
 
 ## M1 完成内容（2025-10-16）
 - pyproject.toml（uv + hatchling，含 entry points 声明、dev extras）
