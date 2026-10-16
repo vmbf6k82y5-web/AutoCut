@@ -29,8 +29,8 @@ class JianYingDraftRenderer:
         out_w, out_h = config.video.out_size
 
         script = draft.ScriptFile(width=out_w, height=out_h)
-        video_track = script.add_track(draft.TrackType.video, name="main")
-        audio_track = script.add_track(draft.TrackType.audio, name="narration")
+        script.add_track(draft.TrackType.video, name="main")
+        script.add_track(draft.TrackType.audio, name="narration")
 
         # 逐段加入素材
         t_offset = 0.0
@@ -41,7 +41,6 @@ class JianYingDraftRenderer:
             dur = seg.src_duration / max(0.01, seg.speed)
             try:
                 material = draft.VideoMaterial(str(src))
-                clip = draft.ClipSettings()
                 script.add_segment(
                     draft.VideoSegment(material, draft.Timerange(start=0, duration=int(dur * 1e6))),
                     track_name="main",

@@ -87,7 +87,7 @@ def run_eval(eval_dir: Path, config: Config, *, profile_name: str | None = None,
         item = EvalItem(video=video.name)
         t0 = time.time()
         try:
-            final = run_video(video, config, profile_name=profile)
+            run_video(video, config, profile_name=profile)
             workdir = config.general.work_dir / video.stem
             # 读 QC 与 manifest
             qc_file = workdir / "11_qc.json"

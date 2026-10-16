@@ -30,7 +30,7 @@ class TestFFmpegBootstrap:
         """auto_download=False 且找不到时抛 FileNotFoundError。"""
         # 清空 PATH 与 override
         monkeypatch.setenv("PATH", str(tmp_path))
-        import autocut.utils as utils
+        from autocut import utils
         from autocut.utils import set_ffmpeg_override_dir
 
         saved = utils._FFMPEG_OVERRIDE_DIR

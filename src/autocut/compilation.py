@@ -83,7 +83,7 @@ def _build_compilation_timeline(outlines, combined, config: Config):
 
     segments: list[Segment] = []
     sid = 0
-    for i, (v, o) in enumerate(outlines):
+    for i, (_v, o) in enumerate(outlines):
         source = f"ep{i}"
         # 每集取最重要节点的一个高光 + 一段 narration
         key_nodes = sorted(o.nodes, key=lambda n: n.importance, reverse=True)[:1]

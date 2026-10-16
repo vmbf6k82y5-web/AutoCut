@@ -67,7 +67,6 @@ def tool_autocut_result(config: Config, job_id: str) -> dict:
     final = rec.get("result", "")
     out: dict[str, Any] = {"job_id": job_id, "output": final, "status": "done"}
     if final:
-        workdir = config.general.work_dir / Path(final).stem.replace("autocut_final", "")
         # manifest 按视频名目录
         for cand in config.general.work_dir.iterdir() if config.general.work_dir.exists() else []:
             mf = cand / "manifest.json"
