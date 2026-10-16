@@ -70,6 +70,22 @@ class StageContext:
         self.profile = config.effective_profile(profile_name)
         self.roles = config.effective_roles(profile_name, role_overrides)
         self.sources: dict[str, Path] = {"main": video}  # 多集合集时扩充
+        self._caller: Any = None  # ModelCaller，惰性创建
+
+    @property
+    def caller(self):
+        """惰性创建 ModelCaller（避免无 LLM 阶段也建缓存目录）。"""
+        if self._caller is None:
+            from .model_client import ModelCaller
+
+            self._caller = ModelCaller(self.config, self.roles, self.workdir, self.profile.vision_mode)
+        return self._caller
+
+    def series_memory_path(self) -> Path | None:
+        """剧集记忆文件路径。"""
+        if self.series_dir:
+            return self.series_dir / "series.json"
+        return None
 
     def done_marker(self, stage: str) -> Path:
         return self.workdir / ".done" / f"{stage}.done"

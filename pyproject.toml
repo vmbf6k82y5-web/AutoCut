@@ -63,7 +63,7 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP", "B", "SIM", "PL"]
 ignore = [
-    "PLR0913", "PLR0912", "PLR0915", "PLR2004", "PLR0917", "E501",
+    "PLR0913", "PLR0912", "PLR0915", "PLR2004", "PLR0917", "PLR0911", "E501",
     "PLC0206",  # dict 键迭代取值的惯用法
     "PLC0415",  # 函数内延迟导入：避免 CLI/GUI 启动加载重依赖
     "PLW0603",  # global：注册表单例与 ffmpeg override 需要

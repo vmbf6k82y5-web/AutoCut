@@ -9,7 +9,7 @@
 | M1 | 项目骨架、配置加载、provider 注册表、mock providers、测试素材、日志脱敏 | ✅ |
 | M2 | 手写 Timeline → ffmpeg_mp4 出 MP4 | ✅ |
 | M3 | probe/hardsub/subtitle/shots/loudness | ✅ |
-| M4 | ModelClient + LLM 阶段（name_fix/outline/scout/vision/writer/reviewer）+ 风格学习 | ⬜ |
+| M4 | ModelClient + LLM 阶段（name_fix/outline/scout/vision/writer/reviewer）+ 风格学习 | ✅ |
 | M5 | tts + align（原创度约束） | ⬜ |
 | M6 | CLI 全流程 + 断点续跑 + 并发 + qc + manifest + estimate | ⬜ |
 | M7 | 剧集记忆 + metadata 发布物料 | ⬜ |
@@ -25,6 +25,25 @@
 
 ## 阻塞
 （暂无）
+
+## M4 完成内容（2025-10-16）
+- `model_client.py`：统一 ModelClient 协议（chat_json/chat_with_images/chat_with_video）
+  - openai 协议（OpenAI SDK，覆盖 DeepSeek/Gemini 兼容/OpenAI/Ollama/中转）
+  - gemini_native 协议（google-genai，视频上传，仅 video 能力）
+  - mock 协议（按 __role__ 标记返回确定性假数据，模拟 token）
+  - ModelCaller：fallback 顺序、429/5xx 指数退避、max_concurrency 信号量限流、
+    pydantic JSON 校验（失败回传重试 3 次 → fixer 修复 → 报错）、
+    请求按内容哈希缓存（重跑不重复花钱）、CostTracker 计费 + max_cost 熔断
+  - token 估算（中文 1 字 1 token）、上下文缓存命中 token 记录
+- `prompt.py`：提示词加载（front-matter 版本、custom_dir 覆盖、哈希、缓存友好固定前缀）
+- 11 个提示词（name_fix/outline/scout/vision/writer/reviewer/rewrite/memory/metadata/style/fixer）
+- 阶段：name_fix（人名纠错+说话人映射）、outline（剧情节点）、scout（LLM+规则兜底）、
+  frames/clips（抽帧/360p 短视频）、vision（批量抽帧/逐段视频）、write（含倒叙钩子+风格指南）、
+  review（best 模式自审改稿）
+- `style.py`：风格学习（范例哈希缓存 style_guide）
+- 12 个 M4 测试全部通过（fallback/缓存/预算熔断/JSON 校验/fixer/并发/提示词版本/端到端）
+- 全量 57 tests passing
+
 
 ## M3 完成内容（2025-10-16）
 - `stages/probe.py`：ffprobe 元信息（时长/分辨率/帧率/音轨/字幕轨）→ 00_probe.json
