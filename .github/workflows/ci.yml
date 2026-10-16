@@ -36,7 +36,24 @@ jobs:
 
       - name: Install ffmpeg (Windows)
         if: runner.os == 'Windows'
-        run: choco install ffmpeg --no-progress
+        shell: pwsh
+        run: |
+          # choco 社区源偶发 504，且“装 0 个包”仍返回 0：必须显式校验并重试，
+          # 否则失败会推迟到 Generate test media 才以 FileNotFoundError 暴露（见 Run 5）
+          $ErrorActionPreference = 'Continue'  # 成败由下面的校验判断，不被非零退出中断
+          for ($i = 1; $i -le 3; $i++) {
+            choco install ffmpeg --no-progress -y
+            if (Get-Command ffmpeg -ErrorAction SilentlyContinue) { break }
+            Write-Host "::warning::第 $i 次安装后仍未找到 ffmpeg，15 秒后重试"
+            Start-Sleep -Seconds 15
+          }
+          $ok = (Get-Command ffmpeg -ErrorAction SilentlyContinue) -and (Get-Command ffprobe -ErrorAction SilentlyContinue)
+          if (-not $ok) {
+            Write-Host "::error::ffmpeg/ffprobe 安装失败（choco 源不稳定）：重跑本 workflow 或改用其他安装源"
+            exit 1
+          }
+          ffmpeg -version
+          ffprobe -version
 
       - name: Install dependencies
         run: |
