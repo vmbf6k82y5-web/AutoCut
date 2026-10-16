@@ -167,3 +167,27 @@ class TestRender:
     def test_encoder_detect(self, ffmpeg_dir):
         enc = detect_encoder(ffmpeg_dir / "ffmpeg")
         assert enc in ("h264_nvenc", "h264_qsv", "h264_amf", "libx264")
+
+    def test_encoder_detect_skips_unusable_encoder(self, monkeypatch, tmp_path):
+        """-encoders 列出 nvenc 但试编失败（无驱动/设备）时必须回退 libx264。"""
+        import types
+
+        from autocut.render import ffmpeg_mp4
+
+        fake_ffmpeg = tmp_path / "ffmpeg"  # 路径唯一，避免命中编码器探测缓存
+
+        def fake_run(args, **kwargs):
+            if "-encoders" in args:
+                return subprocess.CompletedProcess(
+                    args, 0,
+                    " V....D h264_nvenc  NVIDIA NVENC H.264 encoder\n"
+                    " V....D h264_qsv    Intel Quick Sync Video H.264 encoder\n"
+                    " V....D libx264     libx264 H.264 / AVC\n",
+                    "",
+                )
+            if "h264_nvenc" in args or "h264_qsv" in args:
+                return subprocess.CompletedProcess(args, 1, "", "Cannot load libcuda.so.1")
+            return subprocess.CompletedProcess(args, 0, "", "")
+
+        monkeypatch.setattr(ffmpeg_mp4, "subprocess", types.SimpleNamespace(run=fake_run))
+        assert detect_encoder(fake_ffmpeg) == "libx264"

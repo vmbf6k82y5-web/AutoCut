@@ -10,7 +10,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from autocut.utils import run_cmd
+from autocut.utils import ffmpeg_filter_path, run_cmd
 
 FFMPEG = "ffmpeg"
 
@@ -71,9 +71,11 @@ def make_embedded_sub_video(out: Path, base: Path, srt: Path) -> Path:
 
 def make_hardsub_video(out: Path, base: Path, srt: Path) -> Path:
     """烧录硬字幕的视频（用于 hardsub 检测测试）。"""
+    # Windows 下 srt 形如 tests\assets\test.srt，反斜杠会被 subtitles 滤镜当转义符
+    # 吞掉（→ testsassetstest.srt），必须转正斜杠并整值加单引号
     args = [
         FFMPEG, "-y", "-i", str(base),
-        "-vf", f"subtitles={srt}:force_style='FontSize=24,PrimaryColour=&H00FFFFFF'",
+        "-vf", f"subtitles='{ffmpeg_filter_path(srt)}':force_style='FontSize=24,PrimaryColour=&H00FFFFFF'",
         "-c:a", "copy", str(out),
     ]
     run(args)

@@ -20,7 +20,7 @@ from typing import Any
 
 from ..contracts import Segment, Timeline
 from ..logging_utils import sanitize
-from ..utils import find_ffmpeg, run_cmd
+from ..utils import ffmpeg_filter_path, find_ffmpeg, run_cmd
 from .ass import ASSEvent, build_ass, events_from_narration
 
 logger = logging.getLogger("autocut.render.ffmpeg_mp4")
@@ -288,8 +288,8 @@ class FFmpegRenderer:
 
     def _final_vf(self, ass_path, hardsub_info, hardsub_mode, out_w, out_h) -> str:
         """最终视频滤镜：烧录字幕 + 硬字幕处理。"""
-        # subtitles 滤镜路径需转义（Windows 盘符与特殊字符）
-        ass_escaped = str(ass_path.resolve()).replace("\\", "/").replace(":", "\\:")
+        # subtitles 滤镜路径需转义（Windows 盘符与反斜杠）
+        ass_escaped = ffmpeg_filter_path(ass_path.resolve())
         vf_parts: list[str] = []
         if hardsub_info and hardsub_info.has_hardsub:
             top = int(out_h * hardsub_info.region_top_ratio)

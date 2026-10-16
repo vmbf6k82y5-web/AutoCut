@@ -80,6 +80,17 @@ def run_cmd(
     return proc
 
 
+def ffmpeg_filter_path(path: str | Path) -> str:
+    """把路径转成能安全放进 ffmpeg 滤镜参数的写法。
+
+    滤镜参数里反斜杠是转义符、冒号是 key=value 分隔符：Windows 路径直接拼进
+    `subtitles=` 会被吞掉反斜杠（tests\\assets\\x.srt → testsassetsx.srt，报
+    "Unable to open"）。这里统一转正斜杠并转义冒号（盘符）；调用处还要用单引号
+    把整个值包起来，否则 `\\:` 仍会被当成参数分隔（实测三种写法只有这种能过）。
+    """
+    return str(path).replace("\\", "/").replace(":", "\\:")
+
+
 def ffprobe_json(video: Path, ffprobe: Path, extra: list[str] | None = None) -> dict:
     """ffprobe 输出 JSON。"""
     import json
