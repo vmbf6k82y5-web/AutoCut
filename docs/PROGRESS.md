@@ -12,7 +12,7 @@
 | M4 | ModelClient + LLM 阶段（name_fix/outline/scout/vision/writer/reviewer）+ 风格学习 | ✅ |
 | M5 | tts + align（原创度约束） | ✅ |
 | M6 | CLI 全流程 + 断点续跑 + 并发 + qc + manifest + estimate | ✅ |
-| M7 | 剧集记忆 + metadata 发布物料 | ⬜ |
+| M7 | 剧集记忆 + metadata 发布物料 | ✅ |
 | M8 | MCP Server + SKILL.md | ⬜ |
 | M9 | GUI + watch 模式 | ⬜ |
 | M10 | eval 评测 + GitHub Actions | ⬜ |
@@ -25,6 +25,14 @@
 
 ## 阻塞
 （暂无）
+
+## M7 完成内容（2025-10-16）
+- `series.py`：SeriesMemory（人物表/别称/关系/读音、说话人映射、前情提要）、
+  load/save/update（memory 角色更新）、run_series（episodes 逐集 + 预算检查）
+- `cover.py`：高潮节点抽帧 → 拉普拉斯清晰度选帧 → 大字标题封面（按画幅）
+- metadata 阶段接入封面生成
+- 7 个 M7 测试全过
+
 
 ## M6 完成内容（2025-10-16）
 - `runner.py`：run_video 全流程（能力校验→编排→manifest）、rerun_job（按 job/工作目录定位 + --from 失效）

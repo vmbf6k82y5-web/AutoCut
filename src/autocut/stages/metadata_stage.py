@@ -43,9 +43,25 @@ def stage_metadata(ctx: StageContext) -> dict:
             logger.warning("metadata 生成失败: %s", e)
 
     save_json_artifact(publish, "publish.json", meta)
+
+    # 封面图：高潮节点最佳帧 + 大字标题
+    from ..contracts import Outline
+    from ..cover import make_cover
+
+    outline_obj = None
+    if outline:
+        try:
+            outline_obj = Outline.model_validate(outline)
+        except Exception:  # noqa: BLE001
+            outline_obj = None
+    cover_title = meta.titles[0] if meta.titles else (title or "影视解说")
+    cover = make_cover(ctx.video, cover_title, outline_obj, ctx.workdir, ctx.config, publish / "cover.jpg")
+    if cover:
+        logger.info("封面: %s", cover)
+
     ctx.artifacts["metadata"] = meta
     logger.info("metadata: %d 个备选标题", len(meta.titles))
-    return {"titles": len(meta.titles)}
+    return {"titles": len(meta.titles), "cover": bool(cover)}
 
 
 def _narration_text(timeline) -> str:
