@@ -14,7 +14,7 @@
 | M6 | CLI 全流程 + 断点续跑 + 并发 + qc + manifest + estimate | ✅ |
 | M7 | 剧集记忆 + metadata 发布物料 | ✅ |
 | M8 | MCP Server + SKILL.md | ✅ |
-| M9 | GUI + watch 模式 | ⬜ |
+| M9 | GUI + watch 模式 | ✅ |
 | M10 | eval 评测 + GitHub Actions | ⬜ |
 | M11 | 多集合集 + 跨语言 + jianying_draft | ⬜ |
 | M12 | PyInstaller 打包 + ffmpeg 首启检测 + README + PLUGINS.md | ⬜ |
@@ -25,6 +25,14 @@
 
 ## 阻塞
 （暂无）
+
+## M9 完成内容（2025-10-16）
+- `web/server.py`：FastAPI app（index、config 读写、models 列表/测试/available、providers、
+  profiles、roles、estimate、run、jobs、preview、eval/list、WebSocket 进度推送）+ JobManager
+- `web/static/index.html` + `app.js`：原生 HTML/JS 三页签（任务/设置/评测）
+- `watcher.py`：watch 监听文件夹（文件稳定检测、估算超预算跳过、done 标记、once 模式）
+- 11 个 M9 测试全过（TestClient 端点 + run 端到端 + watch once）
+
 
 ## M8 完成内容（2025-10-16）
 - `mcp_server.py`：官方 mcp SDK stdio server + 11 个工具

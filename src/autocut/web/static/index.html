@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AutoCut</title>
+<style>
+  :root { --bg:#0f1419; --panel:#1a2230; --fg:#e6e6e6; --accent:#4f8ef7; --ok:#3fb950; --err:#f85149; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, "Microsoft YaHei", sans-serif; background:var(--bg); color:var(--fg); }
+  header { padding:14px 22px; background:var(--panel); display:flex; align-items:center; gap:18px; }
+  header h1 { font-size:20px; margin:0; }
+  nav button { background:none; border:none; color:var(--fg); padding:8px 14px; cursor:pointer; font-size:15px; border-bottom:2px solid transparent; }
+  nav button.active { color:var(--accent); border-bottom-color:var(--accent); }
+  main { padding:22px; max-width:1100px; margin:0 auto; }
+  .panel { background:var(--panel); border-radius:10px; padding:18px; margin-bottom:18px; }
+  label { display:block; margin:10px 0 4px; font-size:13px; color:#9fb0c3; }
+  input,select,textarea { width:100%; padding:8px; border-radius:6px; border:1px solid #2c3949; background:#0d131b; color:var(--fg); font-size:14px; }
+  button.primary { background:var(--accent); color:#fff; border:none; padding:10px 22px; border-radius:6px; cursor:pointer; font-size:15px; }
+  button.primary:disabled { opacity:.5; }
+  .row { display:flex; gap:14px; flex-wrap:wrap; }
+  .row > div { flex:1; min-width:160px; }
+  .job { border:1px solid #2c3949; border-radius:8px; padding:12px; margin:10px 0; }
+  .badge { padding:2px 8px; border-radius:10px; font-size:12px; }
+  .b-run { background:#1f3a5f; } .b-done { background:var(--ok); color:#000; } .b-err { background:var(--err); }
+  .hidden { display:none; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  td,th { padding:6px 8px; border-bottom:1px solid #2c3949; text-align:left; }
+  .muted { color:#8b98a8; font-size:13px; }
+  video { width:100%; max-height:360px; border-radius:8px; background:#000; }
+  .role-row { display:flex; align-items:center; gap:10px; margin:6px 0; }
+  .role-row label { width:110px; margin:0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎬 AutoCut</h1>
+  <nav>
+    <button data-tab="tasks" class="active">任务</button>
+    <button data-tab="settings">设置</button>
+    <button data-tab="eval">评测</button>
+  </nav>
+</header>
+<main>
+  <!-- 任务页 -->
+  <section id="tab-tasks">
+    <div class="panel">
+      <h3>新建解说任务</h3>
+      <label>视频路径（本地文件绝对路径）</label>
+      <input id="video" placeholder="/path/to/剧集.mp4">
+      <div class="row">
+        <div><label>方案 profile</label><select id="profile"></select></div>
+        <div><label>风格</label><select id="style"><option>悬疑</option><option>搞笑</option><option>情感</option></select></div>
+        <div><label>画幅</label><select id="aspect"><option>16:9</option><option>9:16</option><option>1:1</option></select></div>
+        <div><label>时长</label><select id="length"><option>8min</option><option>5min</option><option>3min</option><option>1min</option></select></div>
+      </div>
+      <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+        <button class="primary" id="btnEstimate">预估费用</button>
+        <button class="primary" id="btnRun">开始处理</button>
+        <span id="estResult" class="muted"></span>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>任务列表</h3>
+      <div id="jobs" class="muted">暂无任务</div>
+    </div>
+  </section>
+
+  <!-- 设置页 -->
+  <section id="tab-settings" class="hidden">
+    <div class="panel">
+      <h3>模型 <button class="primary" style="float:right" id="btnAddModel">+ 添加模型</button></h3>
+      <table id="modelsTable"><thead><tr><th>name</th><th>protocol</th><th>capabilities</th><th>价格(in/out)</th><th>操作</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="panel">
+      <h3>角色分配 <span class="muted">（当前 profile：<select id="profileSel" style="width:auto;display:inline-block"></select>）</span></h3>
+      <div id="rolesEditor"></div>
+    </div>
+    <div class="panel">
+      <h3>完整配置（TOML） <button class="primary" style="float:right" id="btnSaveCfg">保存</button></h3>
+      <textarea id="cfgToml" rows="20" style="font-family:monospace"></textarea>
+      <div id="cfgMsg" class="muted"></div>
+    </div>
+  </section>
+
+  <!-- 评测页 -->
+  <section id="tab-eval" class="hidden">
+    <div class="panel">
+      <h3>评测报告</h3>
+      <div id="evalReports" class="muted">暂无评测报告</div>
+    </div>
+  </section>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>
