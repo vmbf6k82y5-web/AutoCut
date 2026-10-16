@@ -11,7 +11,7 @@
 | M3 | probe/hardsub/subtitle/shots/loudness | ✅ |
 | M4 | ModelClient + LLM 阶段（name_fix/outline/scout/vision/writer/reviewer）+ 风格学习 | ✅ |
 | M5 | tts + align（原创度约束） | ✅ |
-| M6 | CLI 全流程 + 断点续跑 + 并发 + qc + manifest + estimate | ⬜ |
+| M6 | CLI 全流程 + 断点续跑 + 并发 + qc + manifest + estimate | ✅ |
 | M7 | 剧集记忆 + metadata 发布物料 | ⬜ |
 | M8 | MCP Server + SKILL.md | ⬜ |
 | M9 | GUI + watch 模式 | ⬜ |
@@ -25,6 +25,18 @@
 
 ## 阻塞
 （暂无）
+
+## M6 完成内容（2025-10-16）
+- `runner.py`：run_video 全流程（能力校验→编排→manifest）、rerun_job（按 job/工作目录定位 + --from 失效）
+- `stages/render_stage.py`：renderer provider 调度 + BGM 曲库扫描（按情绪子文件夹）
+- `stages/qc.py`：blackdetect/silencedetect/时长偏差/原创度 → 11_qc.json（error 才 fail）
+- `stages/metadata_stage.py`：发布物料（标题/简介/标签）
+- `manifest.py`：角色实际模型、提示词版本+哈希、脱敏配置快照、token/费用汇总
+- `estimate.py`：只跑 probe + 字幕统计，按角色分配与单价预估 token/费用，预算校验
+- 断点续跑（.done 标记）、--from 失效、ffmpeg_concurrency 并行
+- 9 个 M6 测试全过（含 mock 全流程产出可播放 MP4 + QC + manifest + 续跑 + CLI）
+- 全量 77 tests passing
+
 
 ## M5 完成内容（2025-10-16）
 - `stages/tts_providers.py`：edge_tts（词级 WordBoundary 时间戳 + 情绪 rate/pitch 映射）/

@@ -165,7 +165,7 @@ class Pipeline:
 
 def build_default_pipeline() -> Pipeline:
     """构建含全部已实现阶段的流水线（逐步启用）。"""
-    from ..stages import register_all_stages
+    from .stages import register_all_stages
 
     p = Pipeline()
     register_all_stages(p)
